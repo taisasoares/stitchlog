@@ -72,3 +72,40 @@ A aplicação é composta por duas frentes, web e mobile, ambas com o mesmo conj
 
 **11. Conquistas** <br>
 11.1 Sistema de conquistas baseado no progresso do usuário
+
+## Arquitetura e Estrutura do Projeto
+
+O **StitchLog** foi estruturado em um modelo de **Monorepo** (monolito de código) para gerenciar o backend, o site web e o aplicativo mobile de forma unificada e organizada. 
+
+O backend do projeto adota uma **Arquitetura em Camadas** (Route → Controller → Service → Repository), o que garante que cada parte do código tenha uma única responsabilidade clara.
+
+### Mapa de Pastas e Arquivos (Backend)
+
+```text
+stitchlog/
+├── .gitignore                              # Regras globais para evitar o envio de arquivos pesados ou senhas ao Git
+├── README.md                               # Documentação geral da aplicação
+├── backend/                                # Servidor API Express e Banco de Dados (PostgreSQL)
+│   ├── migrations/                         # Histórico de alterações estruturais e criação das tabelas no banco
+│   │   ├── 001_create_recipes.sql          # Criação da tabela de receitas
+│   │   └── 002_create_users_add_fk.sql     # Criação de usuários e vínculo de relacionamento
+│   ├── src/                                # Código-fonte principal do servidor
+│   │   ├── recipes/                        # Módulo de Receitas (Feature Domain)
+│   │   │   ├── recipes.routes.ts           # Rota: Associa URLs e ações HTTP às funções do controller
+│   │   │   ├── recipes.controller.ts       # Controller: Trata dados HTTP de entrada e formata respostas JSON
+│   │   │   ├── recipes.service.ts          # Service: Onde vivem as regras e lógicas de negócio do app
+│   │   │   └── recipes.repository.ts       # Repository: Executa as queries SQL diretas no PostgreSQL
+│   │   ├── errors/                         # Gerenciamento de respostas de erros padronizadas da API
+│   │   │   ├── errorHandler.ts             # Middleware que captura falhas internas e envia JSON estruturado
+│   │   │   └── notFoundHandler.ts          # Middleware que trata requisições para rotas inexistentes (404)
+│   │   ├── config.ts                       # Carrega e valida se as variáveis de ambiente necessárias estão ativas
+│   │   ├── db.ts                           # Inicializa o Pool de conexões simultâneas com o banco de dados
+│   │   └── app.ts                          # Ponto de entrada do servidor (configura Express, rotas e middlewares)
+│   ├── .env                                # Variáveis de ambiente locais com senhas e portas de rede (não enviado ao Git)
+│   ├── migrate.ts                          # Script TypeScript que executa os arquivos de migração em ordem
+│   ├── seed.sql                            # Script SQL para popular o banco de dados com dados de teste realistas
+│   ├── package.json                        # Gerenciador de dependências e scripts de inicialização rápida (npm run)
+│   └── tsconfig.json                       # Arquivo de configuração do compilador TypeScript
+├── web/                                    # [Futuro] Aplicação Frontend Web
+└── mobile/                                 # [Futuro] Aplicativo Mobile Multiplataforma (iOS & Android) em React Native
+```

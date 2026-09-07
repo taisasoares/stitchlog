@@ -1,0 +1,26 @@
+# --- BANCO DE DADOS E CONFIGURAÇÕES PRIVADAS ---
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# --- DEPENDÊNCIAS (Muito pesadas para subir para o Git) ---
+**/node_modules/
+
+# --- COMPILAÇÃO E SAÍDA ---
+backend/dist/
+web/.next/
+web/out/
+web/build/
+
+# --- MOBILE (React Native / Expo / iOS / Android) ---
+mobile/.expo/
+mobile/web-build/
+mobile/dist/
+ios/
+android/
+
+# --- SISTEMA OPERACIONAL ---
+.DS_Store
+Thumbs.db
