@@ -73,39 +73,152 @@ A aplicação é composta por duas frentes, web e mobile, ambas com o mesmo conj
 **11. Conquistas** <br>
 11.1 Sistema de conquistas baseado no progresso do usuário
 
-## Arquitetura e Estrutura do Projeto
+## Backend implementado
 
-O **StitchLog** foi estruturado em um modelo de **Monorepo** (monolito de código) para gerenciar o backend, o site web e o aplicativo mobile de forma unificada e organizada. 
-
-O backend do projeto adota uma **Arquitetura em Camadas** (Route → Controller → Service → Repository), o que garante que cada parte do código tenha uma única responsabilidade clara.
-
-### Mapa de Pastas e Arquivos (Backend)
+O backend utiliza Node.js, TypeScript, Express, PostgreSQL e o driver `pg`, sem ORM.
+Cada recurso segue o fluxo:
 
 ```text
-stitchlog/
-├── .gitignore                              # Regras globais para evitar o envio de arquivos pesados ou senhas ao Git
-├── README.md                               # Documentação geral da aplicação
-├── backend/                                # Servidor API Express e Banco de Dados (PostgreSQL)
-│   ├── migrations/                         # Histórico de alterações estruturais e criação das tabelas no banco
-│   │   ├── 001_create_recipes.sql          # Criação da tabela de receitas
-│   │   └── 002_create_users_add_fk.sql     # Criação de usuários e vínculo de relacionamento
-│   ├── src/                                # Código-fonte principal do servidor
-│   │   ├── recipes/                        # Módulo de Receitas (Feature Domain)
-│   │   │   ├── recipes.routes.ts           # Rota: Associa URLs e ações HTTP às funções do controller
-│   │   │   ├── recipes.controller.ts       # Controller: Trata dados HTTP de entrada e formata respostas JSON
-│   │   │   ├── recipes.service.ts          # Service: Onde vivem as regras e lógicas de negócio do app
-│   │   │   └── recipes.repository.ts       # Repository: Executa as queries SQL diretas no PostgreSQL
-│   │   ├── errors/                         # Gerenciamento de respostas de erros padronizadas da API
-│   │   │   ├── errorHandler.ts             # Middleware que captura falhas internas e envia JSON estruturado
-│   │   │   └── notFoundHandler.ts          # Middleware que trata requisições para rotas inexistentes (404)
-│   │   ├── config.ts                       # Carrega e valida se as variáveis de ambiente necessárias estão ativas
-│   │   ├── db.ts                           # Inicializa o Pool de conexões simultâneas com o banco de dados
-│   │   └── app.ts                          # Ponto de entrada do servidor (configura Express, rotas e middlewares)
-│   ├── .env                                # Variáveis de ambiente locais com senhas e portas de rede (não enviado ao Git)
-│   ├── migrate.ts                          # Script TypeScript que executa os arquivos de migração em ordem
-│   ├── seed.sql                            # Script SQL para popular o banco de dados com dados de teste realistas
-│   ├── package.json                        # Gerenciador de dependências e scripts de inicialização rápida (npm run)
-│   └── tsconfig.json                       # Arquivo de configuração do compilador TypeScript
-├── web/                                    # [Futuro] Aplicação Frontend Web
-└── mobile/                                 # [Futuro] Aplicativo Mobile Multiplataforma (iOS & Android) em React Native
+Route → Controller → Service → Repository → PostgreSQL
 ```
+
+Os repositories convertem as linhas retornadas pelo PostgreSQL em instâncias das
+classes de entidade. Cada classe possui atributos privados, construtor, getters e
+setters para os atributos mutáveis.
+
+### Entidades e relacionamentos
+
+- `User`: usuário que cria receitas e acompanha execuções.
+- `Recipe`: receita pertencente a um usuário e a uma categoria.
+- `Category`: classificação normalizada das receitas.
+- `Tag`: etiqueta associada a receitas por `recipe_tags`.
+- `Material`: material ou ferramenta. Quantidade, unidade e cor ficam em
+  `recipe_materials`, pois são informações específicas de cada receita.
+- `Step`: instrução ordenada de uma receita.
+- `Execution`: acompanhamento do progresso de um usuário em uma receita.
+- `favorites`: associação entre usuários e suas receitas favoritas. Não possui
+  endpoint independente nesta atividade.
+
+### Estrutura principal
+
+```text
+backend/
+├── migrations/                  # Migrations SQL numeradas de 001 a 007
+├── src/
+│   ├── users/                   # Entity, repository, service, controller e routes
+│   ├── recipes/                 # Entity, repository, service, controller e routes
+│   ├── categories/              # Entity, repository, service, controller e routes
+│   ├── tags/                    # Entity, repository, service, controller e routes
+│   ├── materials/               # Entity, repository, service, controller e routes
+│   ├── steps/                   # Entity, repository, service, controller e routes
+│   ├── executions/              # Entity, repository, service, controller e routes
+│   ├── errors/                  # Middlewares de erro e rota não encontrada
+│   ├── app.ts                   # Configuração do Express e registro das rotas
+│   ├── config.ts                # Leitura da configuração do ambiente
+│   └── db.ts                    # Pool de conexões PostgreSQL
+├── migrate.ts                   # Executor incremental de migrations
+├── seed.ts                      # Executor da seed
+├── seed.sql                     # Dados fictícios para desenvolvimento
+├── package.json
+└── tsconfig.json
+```
+
+## Endpoints disponíveis
+
+Todos os endpoints desta atividade são somente de leitura:
+
+| Método | Endpoint | Retorno |
+|---|---|---|
+| GET | `/api/users` | Lista de usuários |
+| GET | `/api/recipes` | Lista de receitas, categorias e criadores |
+| GET | `/api/categories` | Lista de categorias |
+| GET | `/api/tags` | Lista de tags |
+| GET | `/api/materials` | Lista de materiais e ferramentas |
+| GET | `/api/steps` | Lista de passos na ordem de cada receita |
+| GET | `/api/executions` | Lista de execuções e seus progressos |
+
+Uma tabela sem registros produz status `200` e o JSON `[]`. Rotas inexistentes
+produzem status `404` com uma resposta JSON padronizada.
+
+## Configuração e execução
+
+### Pré-requisitos
+
+- Node.js 22 ou versão compatível.
+- PostgreSQL em execução.
+- Um banco de desenvolvimento criado.
+
+Entre na pasta do backend e instale as dependências:
+
+```bash
+cd backend
+npm install
+```
+
+Crie `backend/.env` com a conexão do seu banco. O arquivo é ignorado pelo Git:
+
+```dotenv
+DATABASE_URL=postgresql://usuario:senha@localhost:5432/stitchlog
+PORT=3000
+```
+
+Execute as migrations na ordem numérica:
+
+```bash
+npm run migrate
+```
+
+O executor registra os arquivos aplicados em `schema_migrations`, portanto novas
+execuções aplicam somente migrations pendentes. Ele também reconhece bancos antigos
+que já possuíam as tabelas `recipes` e `users`.
+
+Para inserir dados fictícios em um banco de desenvolvimento:
+
+```bash
+npm run seed
+```
+
+> Atenção: a seed esvazia as tabelas da aplicação antes de inserir os exemplos.
+> Não a execute em um banco que contenha dados que devam ser preservados.
+
+Inicie o servidor:
+
+```bash
+npm run dev
+```
+
+Para iniciar sem observação automática de arquivos, use `npm start`.
+
+## Compilação e testes manuais
+
+Verifique os tipos sem gerar arquivos:
+
+```bash
+npm run typecheck
+```
+
+Compile o TypeScript:
+
+```bash
+npm run build
+```
+
+O comando de teste atual executa o typecheck:
+
+```bash
+npm test
+```
+
+Com o servidor em execução, os endpoints podem ser consultados, por exemplo:
+
+```bash
+curl http://localhost:3000/api/users
+curl http://localhost:3000/api/recipes
+curl http://localhost:3000/api/categories
+curl http://localhost:3000/api/tags
+curl http://localhost:3000/api/materials
+curl http://localhost:3000/api/steps
+curl http://localhost:3000/api/executions
+```
+
+O escopo atual não inclui POST, PUT, PATCH, DELETE, autenticação, frontend ou ORM.

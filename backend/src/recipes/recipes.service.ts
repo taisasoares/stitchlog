@@ -1,4 +1,5 @@
-import { RecipesRepository, Recipe } from './recipes.repository';
+import { Recipe } from './recipes.entity';
+import { RecipesRepository } from './recipes.repository';
 
 export class RecipesService {
   private repository = new RecipesRepository();
