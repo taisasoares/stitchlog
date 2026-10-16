@@ -3,9 +3,13 @@
   "version": "1.0.0",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1",
+    "build": "tsc",
+    "typecheck": "tsc --noEmit",
+    "test": "npm run typecheck",
     "start": "tsx src/app.ts",
-    "dev": "tsx --watch src/app.ts"
+    "dev": "tsx --watch src/app.ts",
+    "migrate": "tsx migrate.ts",
+    "seed": "tsx seed.ts"
   },
   "keywords": [],
   "author": "",
