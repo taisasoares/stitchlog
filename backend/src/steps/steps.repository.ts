@@ -5,7 +5,7 @@ export class StepsRepository {
   async findAll(): Promise<Step[]> {
     const result = await pool.query(`
       SELECT s.id, s.recipe_id, r.title AS recipe_title,
-             s.position, s.instruction, s.created_at
+             s.position, s.instruction, s.stitch_types, s.created_at
       FROM steps s
       JOIN recipes r ON r.id = s.recipe_id
       ORDER BY s.recipe_id, s.position;
@@ -17,6 +17,7 @@ export class StepsRepository {
       row.recipe_title,
       row.position,
       row.instruction,
+      row.stitch_types,
       row.created_at,
     ));
   }

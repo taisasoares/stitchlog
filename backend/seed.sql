@@ -1,10 +1,12 @@
-TRUNCATE favorites, executions, steps, recipe_materials, materials,
+BEGIN;
+
+TRUNCATE saved_recipes, favorites, executions, steps, recipe_materials, materials,
          recipe_tags, tags, recipes, categories, users
 RESTART IDENTITY CASCADE;
 
-INSERT INTO users (name, email) VALUES
-('Taisa Artesã', 'taisa@example.com'),
-('Gabriel Crochê', 'gabriel@example.com');
+INSERT INTO users (name, email, password_hash, password_reset_required) VALUES
+('Taisa Artesã', 'taisa@example.com', '$2b$12$u5HE.tUQ5gUhB9KpFntBZuMxmVl.v.kfFPTFO2F.ssyqjtJXJjUn6', TRUE),
+('Gabriel Crochê', 'gabriel@example.com', '$2b$12$u5HE.tUQ5gUhB9KpFntBZuMxmVl.v.kfFPTFO2F.ssyqjtJXJjUn6', TRUE);
 
 INSERT INTO categories (name) VALUES
 ('Amigurumi'),
@@ -45,14 +47,14 @@ INSERT INTO recipe_materials (recipe_id, material_id, quantity, unit, color) VAL
 (3, 3, 8, 'novelos', 'cru'),
 (3, 5, 1, 'unidade', NULL);
 
-INSERT INTO steps (recipe_id, position, instruction) VALUES
-(1, 1, 'Faça um anel mágico com quatro pontos baixos.'),
-(1, 2, 'Aumente os pontos até formar a metade de cima da cabeça do urso.'),
-(1, 3, 'Faça diminuições até formar a parte de baixo da cabeça do urso.'),
-(2, 1, 'Faça correntinhas até atingir o comprimento desejado.'),
-(2, 2, 'Trabalhe carreiras de ponto alto até o comprimento final.'),
-(3, 1, 'Produza os quadrados de crochê conforme o padrão escolhido.'),
-(3, 2, 'Una os quadrados e faça o acabamento das bordas.');
+INSERT INTO steps (recipe_id, position, instruction, stitch_types) VALUES
+(1, 1, 'Faça um anel mágico com quatro pontos baixos.', 'anel mágico, ponto baixo'),
+(1, 2, 'Aumente os pontos até formar a metade de cima da cabeça do urso.', 'ponto baixo'),
+(1, 3, 'Faça diminuições até formar a parte de baixo da cabeça do urso.', 'ponto baixo'),
+(2, 1, 'Faça correntinhas até atingir o comprimento desejado.', 'correntinha'),
+(2, 2, 'Trabalhe carreiras de ponto alto até o comprimento final.', 'ponto alto'),
+(3, 1, 'Produza os quadrados de crochê conforme o padrão escolhido.', NULL),
+(3, 2, 'Una os quadrados e faça o acabamento das bordas.', NULL);
 
 INSERT INTO executions (
   user_id, recipe_id, status, progress, current_step_id,
@@ -65,3 +67,9 @@ INSERT INTO executions (
 INSERT INTO favorites (user_id, recipe_id) VALUES
 (1, 3),
 (2, 1);
+
+INSERT INTO saved_recipes (user_id, recipe_id) VALUES
+(1, 2),
+(2, 3);
+
+COMMIT;

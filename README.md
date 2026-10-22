@@ -7,6 +7,10 @@ O usuário pode cadastrar e organizar suas próprias receitas, incluindo os mate
 
 A aplicação é composta por duas frentes, web e mobile, ambas com o mesmo conjunto de funcionalidades.
 
+## Documentação
+
+- [Modelo conceitual](docs/modeloConceitual.pdf)
+
 ## Funcionalidades
 
 ### MVP
@@ -88,22 +92,49 @@ setters para os atributos mutáveis.
 
 ### Entidades e relacionamentos
 
-- `User`: usuário que cria receitas e acompanha execuções.
+- `User`: usuário que cria receitas e acompanha execuções. A senha é persistida
+  exclusivamente em `password_hash`; contas migradas exigem redefinição.
 - `Recipe`: receita pertencente a um usuário e a uma categoria.
 - `Category`: classificação normalizada das receitas.
 - `Tag`: etiqueta associada a receitas por `recipe_tags`.
 - `Material`: material ou ferramenta. Quantidade, unidade e cor ficam em
   `recipe_materials`, pois são informações específicas de cada receita.
-- `Step`: instrução ordenada de uma receita.
-- `Execution`: acompanhamento do progresso de um usuário em uma receita.
+- `Step`: instrução ordenada de uma receita, com texto livre opcional para os
+  tipos de ponto utilizados.
+- `Execution`: acompanhamento do progresso de um usuário em uma receita. Quando
+  informado, o passo atual obrigatoriamente pertence à receita executada.
 - `favorites`: associação entre usuários e suas receitas favoritas. Não possui
   endpoint independente nesta atividade.
+- `saved_recipes`: associação independente entre usuários e receitas salvas.
+  Não possui endpoint independente nesta atividade.
+
+### Alinhamento entre o modelo conceitual e o relacional
+
+| Conceito | Implementação relacional |
+|---|---|
+| Usuário cria receitas | `recipes.user_id` referencia `users.id` |
+| Categoria classifica receitas | `recipes.category_id` referencia `categories.id` |
+| Receita possui um ou mais passos | `steps.recipe_id` e os triggers da migration `008` |
+| Receita possui tags | associação muitos-para-muitos `recipe_tags` |
+| Receita utiliza materiais | associação muitos-para-muitos `recipe_materials`, que também armazena quantidade, unidade e cor |
+| Usuário salva ou favorita receitas | associações muitos-para-muitos independentes `saved_recipes` e `favorites` |
+| Usuário executa receitas | entidade associativa `executions`, com estado e progresso |
+| Execução possui passo atual | FK composta garante que o passo pertence à mesma receita |
+
+`steps.stitch_types` descreve quais tipos de ponto são usados na instrução, como
+`correntinha` ou `ponto baixo`. Ele não representa o contador quantitativo de
+pontos/carreiras descrito nas funcionalidades futuras.
+
+O backend ainda não possui cadastro ou autenticação. Quando esses fluxos forem
+implementados, a aplicação deverá gerar hashes de senha adequados e nunca enviar
+`password_hash` nas respostas HTTP. As contas anteriores à migration `009`
+permanecem com `password_reset_required = true` até uma redefinição futura.
 
 ### Estrutura principal
 
 ```text
 backend/
-├── migrations/                  # Migrations SQL numeradas de 001 a 007
+├── migrations/                  # Migrations SQL numeradas de 001 a 009
 ├── src/
 │   ├── users/                   # Entity, repository, service, controller e routes
 │   ├── recipes/                 # Entity, repository, service, controller e routes
