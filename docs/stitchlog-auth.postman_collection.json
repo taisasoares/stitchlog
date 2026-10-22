@@ -1,0 +1,185 @@
+{
+  "info": {
+    "name": "StitchLog - Fluxo de autenticação",
+    "description": "Valida login e acesso a rotas públicas e privadas da API StitchLog.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Login válido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Login retorna 200', () => pm.response.to.have.status(200));",
+              "const body = pm.response.json();",
+              "pm.expect(body.token).to.be.a('string');",
+              "pm.expect(body.user).not.to.have.property('password_hash');",
+              "pm.collectionVariables.set('token', body.token);",
+              "pm.collectionVariables.set('userId', body.user.id);",
+              "pm.collectionVariables.set('userName', body.user.name);",
+              "pm.collectionVariables.set('userEmail', body.user.email);"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"{{password}}\"\n}"
+        },
+        "url": "{{baseUrl}}/api/login"
+      }
+    },
+    {
+      "name": "Login inválido",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Credenciais inválidas retornam 401', () => pm.response.to.have.status(401));",
+              "pm.expect(pm.response.json().error.code).to.eql('INVALID_CREDENTIALS');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "POST",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"email\": \"{{email}}\",\n  \"password\": \"senha-incorreta\"\n}"
+        },
+        "url": "{{baseUrl}}/api/login"
+      }
+    },
+    {
+      "name": "Rota pública sem token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Rota pública retorna 200', () => pm.response.to.have.status(200));"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "GET",
+        "header": [],
+        "url": "{{baseUrl}}/api/users"
+      }
+    },
+    {
+      "name": "Rota privada sem token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Rota privada sem token retorna 401', () => pm.response.to.have.status(401));",
+              "pm.expect(pm.response.json().error.code).to.eql('AUTH_TOKEN_REQUIRED');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{userName}}\",\n  \"email\": \"{{userEmail}}\"\n}"
+        },
+        "url": "{{baseUrl}}/api/users/{{userId}}"
+      }
+    },
+    {
+      "name": "Rota privada com token",
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "pm.test('Token válido permite acesso', () => pm.response.to.have.status(200));",
+              "pm.expect(pm.response.json()).not.to.have.property('password_hash');"
+            ]
+          }
+        }
+      ],
+      "request": {
+        "auth": {
+          "type": "bearer",
+          "bearer": [
+            {
+              "key": "token",
+              "value": "{{token}}",
+              "type": "string"
+            }
+          ]
+        },
+        "method": "PUT",
+        "header": [
+          {
+            "key": "Content-Type",
+            "value": "application/json"
+          }
+        ],
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"name\": \"{{userName}}\",\n  \"email\": \"{{userEmail}}\"\n}"
+        },
+        "url": "{{baseUrl}}/api/users/{{userId}}"
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000"
+    },
+    {
+      "key": "email",
+      "value": "taisa@example.com"
+    },
+    {
+      "key": "password",
+      "value": "stitchlog123"
+    },
+    {
+      "key": "token",
+      "value": ""
+    },
+    {
+      "key": "userId",
+      "value": ""
+    },
+    {
+      "key": "userName",
+      "value": ""
+    },
+    {
+      "key": "userEmail",
+      "value": ""
+    }
+  ]
+}

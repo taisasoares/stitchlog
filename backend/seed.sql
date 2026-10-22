@@ -5,8 +5,8 @@ TRUNCATE saved_recipes, favorites, executions, steps, recipe_materials, material
 RESTART IDENTITY CASCADE;
 
 INSERT INTO users (name, email, password_hash, password_reset_required) VALUES
-('Taisa Artesã', 'taisa@example.com', '$2b$12$u5HE.tUQ5gUhB9KpFntBZuMxmVl.v.kfFPTFO2F.ssyqjtJXJjUn6', TRUE),
-('Gabriel Crochê', 'gabriel@example.com', '$2b$12$u5HE.tUQ5gUhB9KpFntBZuMxmVl.v.kfFPTFO2F.ssyqjtJXJjUn6', TRUE);
+('Taisa Artesã', 'taisa@example.com', '$2b$12$fAU8yq8CdsHNizj63CeJUO.acoR3o6XZ5TMA9eIrBYw25LqxSydom', FALSE),
+('Gabriel Crochê', 'gabriel@example.com', '$2b$12$fAU8yq8CdsHNizj63CeJUO.acoR3o6XZ5TMA9eIrBYw25LqxSydom', FALSE);
 
 INSERT INTO categories (name) VALUES
 ('Amigurumi'),

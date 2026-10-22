@@ -5,7 +5,7 @@
   "scripts": {
     "build": "tsc",
     "typecheck": "tsc --noEmit",
-    "test": "npm run typecheck",
+    "test": "npm run typecheck && tsx --test src/users/users.entity.test.ts src/users/users.service.test.ts src/auth/auth.service.test.ts src/auth/auth.flow.test.ts src/auth/requireAuth.test.ts src/config.test.ts",
     "start": "tsx src/app.ts",
     "dev": "tsx --watch src/app.ts",
     "migrate": "tsx migrate.ts",
@@ -16,14 +16,20 @@
   "license": "ISC",
   "description": "",
   "dependencies": {
+    "bcrypt": "^6.0.0",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",
+    "jsonwebtoken": "^9.0.3",
     "pg": "^8.23.0"
   },
   "devDependencies": {
+    "@types/bcrypt": "^6.0.0",
     "@types/express": "^5.0.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^26.4.1",
     "@types/pg": "^8.23.1",
+    "@types/supertest": "^7.2.1",
+    "supertest": "^7.3.1",
     "tsx": "^4.23.13",
     "typescript": "^7.0.2"
   }

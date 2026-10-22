@@ -1,8 +1,6 @@
 import { Pool } from 'pg';
-import { loadConfig } from './config';
-
-const config = loadConfig();
+import { loadDatabaseUrl } from './config';
 
 export const pool = new Pool({
-  connectionString: config.databaseUrl,
+  connectionString: loadDatabaseUrl(),
 });

@@ -1,6 +1,7 @@
 import 'dotenv/config';
 import express from 'express';
 import { loadConfig } from './config';
+import authRoutes from './auth/auth.routes';
 import categoryRoutes from './categories/categories.routes';
 import executionRoutes from './executions/executions.routes';
 import materialRoutes from './materials/materials.routes';
@@ -16,6 +17,7 @@ const app = express();
 
 app.use(express.json());
 
+app.use('/api', authRoutes);
 app.use('/api', userRoutes);
 app.use('/api', recipeRoutes);
 app.use('/api', categoryRoutes);

@@ -125,18 +125,24 @@ setters para os atributos mutáveis.
 `correntinha` ou `ponto baixo`. Ele não representa o contador quantitativo de
 pontos/carreiras descrito nas funcionalidades futuras.
 
-O backend ainda não possui cadastro ou autenticação. Quando esses fluxos forem
-implementados, a aplicação deverá gerar hashes de senha adequados e nunca enviar
-`password_hash` nas respostas HTTP. As contas anteriores à migration `009`
-permanecem com `password_reset_required = true` até uma redefinição futura.
+O backend possui login com comparação bcrypt e emissão de JWT. A aplicação nunca
+envia `password_hash` nas respostas HTTP. As contas anteriores à migration `009`
+permanecem com `password_reset_required = true` e não podem autenticar até uma
+redefinição futura.
+
+Rotas privadas usam o middleware `requireAuth` e esperam o token no formato
+`Authorization: Bearer <token>`. A identidade validada fica disponível em
+`req.auth.userId`; operações autenticadas não devem confiar em um `user_id`
+enviado no corpo da requisição.
 
 ### Estrutura principal
 
 ```text
 backend/
-├── migrations/                  # Migrations SQL numeradas de 001 a 009
+├── migrations/                  # Migrations SQL numeradas de 001 a 010
 ├── src/
 │   ├── users/                   # Entity, repository, service, controller e routes
+│   ├── auth/                    # Login com bcrypt e emissão de JWT
 │   ├── recipes/                 # Entity, repository, service, controller e routes
 │   ├── categories/              # Entity, repository, service, controller e routes
 │   ├── tags/                    # Entity, repository, service, controller e routes
@@ -156,11 +162,16 @@ backend/
 
 ## Endpoints disponíveis
 
-Todos os endpoints desta atividade são somente de leitura:
+Os endpoints disponíveis são:
 
 | Método | Endpoint | Retorno |
 |---|---|---|
+| POST | `/api/login` | Token JWT e dados públicos do usuário |
 | GET | `/api/users` | Lista de usuários |
+| GET | `/api/users/:id` | Consulta pública de um usuário |
+| POST | `/api/users` | Cadastra um usuário |
+| PUT | `/api/users/:id` | Atualiza a própria conta (requer token) |
+| DELETE | `/api/users/:id` | Exclui a própria conta (requer token) |
 | GET | `/api/recipes` | Lista de receitas, categorias e criadores |
 | GET | `/api/categories` | Lista de categorias |
 | GET | `/api/tags` | Lista de tags |
@@ -191,6 +202,8 @@ Crie `backend/.env` com a conexão do seu banco. O arquivo é ignorado pelo Git:
 ```dotenv
 DATABASE_URL=postgresql://usuario:senha@localhost:5432/stitchlog
 PORT=3000
+JWT_SECRET=troque-por-um-segredo-forte
+JWT_EXPIRES_IN=1h
 ```
 
 Execute as migrations na ordem numérica:
@@ -209,6 +222,11 @@ Para inserir dados fictícios em um banco de desenvolvimento:
 npm run seed
 ```
 
+A seed cria usuários de desenvolvimento com a senha `stitchlog123`.
+
+Ao excluir uma conta, suas receitas, execuções, favoritos e receitas salvas são
+removidos em cascata.
+
 > Atenção: a seed esvazia as tabelas da aplicação antes de inserir os exemplos.
 > Não a execute em um banco que contenha dados que devam ser preservados.
 
@@ -219,6 +237,10 @@ npm run dev
 ```
 
 Para iniciar sem observação automática de arquivos, use `npm start`.
+
+Para reproduzir login, acesso público, acesso privado e expiração de token no
+Postman, consulte [`docs/authentication-postman.md`](docs/authentication-postman.md)
+e importe [`docs/stitchlog-auth.postman_collection.json`](docs/stitchlog-auth.postman_collection.json).
 
 ## Compilação e testes manuais
 
@@ -244,6 +266,18 @@ Com o servidor em execução, os endpoints podem ser consultados, por exemplo:
 
 ```bash
 curl http://localhost:3000/api/users
+curl -X POST http://localhost:3000/api/login \
+  -H 'Content-Type: application/json' \
+  -d '{"email":"taisa@example.com","password":"stitchlog123"}'
+curl -X POST http://localhost:3000/api/users \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Nova Pessoa","email":"nova@example.com","password":"senha-segura"}'
+curl -X PUT http://localhost:3000/api/users/1 \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"name":"Nome Atualizado","email":"taisa@example.com"}'
+curl -X DELETE http://localhost:3000/api/users/1 \
+  -H 'Authorization: Bearer <token>'
 curl http://localhost:3000/api/recipes
 curl http://localhost:3000/api/categories
 curl http://localhost:3000/api/tags
@@ -252,4 +286,5 @@ curl http://localhost:3000/api/steps
 curl http://localhost:3000/api/executions
 ```
 
-O escopo atual não inclui POST, PUT, PATCH, DELETE, autenticação, frontend ou ORM.
+O escopo atual não inclui redefinição de senha, perfis administrativos, proteção
+das demais rotas, frontend ou ORM.
