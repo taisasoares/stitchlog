@@ -114,7 +114,7 @@ setters para os atributos mutáveis.
 |---|---|
 | Usuário cria receitas | `recipes.user_id` referencia `users.id` |
 | Categoria classifica receitas | `recipes.category_id` referencia `categories.id` |
-| Receita possui um ou mais passos | `steps.recipe_id` e os triggers da migration `008` |
+| Receita pode possuir passos | `steps.recipe_id` referencia `recipes.id` |
 | Receita possui tags | associação muitos-para-muitos `recipe_tags` |
 | Receita utiliza materiais | associação muitos-para-muitos `recipe_materials`, que também armazena quantidade, unidade e cor |
 | Usuário salva ou favorita receitas | associações muitos-para-muitos independentes `saved_recipes` e `favorites` |
@@ -139,7 +139,7 @@ enviado no corpo da requisição.
 
 ```text
 backend/
-├── migrations/                  # Migrations SQL numeradas de 001 a 010
+├── migrations/                  # Migrations SQL numeradas de 001 a 011
 ├── src/
 │   ├── users/                   # Entity, repository, service, controller e routes
 │   ├── auth/                    # Login com bcrypt e emissão de JWT
@@ -173,6 +173,10 @@ Os endpoints disponíveis são:
 | PUT | `/api/users/:id` | Atualiza a própria conta (requer token) |
 | DELETE | `/api/users/:id` | Exclui a própria conta (requer token) |
 | GET | `/api/recipes` | Lista de receitas, categorias e criadores |
+| GET | `/api/recipes/:id` | Consulta uma receita pelo ID |
+| POST | `/api/recipes` | Cadastra uma receita para o usuário autenticado |
+| PUT | `/api/recipes/:id` | Atualiza uma receita do usuário autenticado |
+| DELETE | `/api/recipes/:id` | Exclui uma receita do usuário autenticado |
 | GET | `/api/categories` | Lista de categorias |
 | GET | `/api/tags` | Lista de tags |
 | GET | `/api/materials` | Lista de materiais e ferramentas |
@@ -279,6 +283,8 @@ curl -X PUT http://localhost:3000/api/users/1 \
 curl -X DELETE http://localhost:3000/api/users/1 \
   -H 'Authorization: Bearer <token>'
 curl http://localhost:3000/api/recipes
+curl -X DELETE http://localhost:3000/api/recipes/1 \
+  -H 'Authorization: Bearer <token>'
 curl http://localhost:3000/api/categories
 curl http://localhost:3000/api/tags
 curl http://localhost:3000/api/materials

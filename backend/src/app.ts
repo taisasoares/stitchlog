@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express from 'express';
+import swaggerUi from 'swagger-ui-express';
 import { loadConfig } from './config';
 import authRoutes from './auth/auth.routes';
 import categoryRoutes from './categories/categories.routes';
@@ -11,11 +12,15 @@ import tagRoutes from './tags/tags.routes';
 import userRoutes from './users/users.routes';
 import { errorHandler } from './errors/errorHandler';
 import { notFoundHandler } from './errors/notFoundHandler';
+import { swaggerDocument } from './swagger';
 
 const config = loadConfig();
 const app = express();
 
 app.use(express.json());
+
+app.get('/api-docs.json', (_req, res) => res.json(swaggerDocument));
+app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
 app.use('/api', authRoutes);
 app.use('/api', userRoutes);
