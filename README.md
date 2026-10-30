@@ -242,6 +242,14 @@ npm run dev
 
 Para iniciar sem observação automática de arquivos, use `npm start`.
 
+A documentação interativa da API fica disponível em
+[`http://localhost:3000/api-docs`](http://localhost:3000/api-docs). O documento
+OpenAPI em JSON pode ser consultado em `http://localhost:3000/api-docs.json`.
+
+Para testar uma rota privada pelo Swagger UI, execute `POST /api/login`, copie o
+campo `token` da resposta, clique em **Authorize** e informe somente o JWT. O
+Swagger adicionará automaticamente o prefixo `Bearer` às requisições protegidas.
+
 Para reproduzir login, acesso público, acesso privado e expiração de token no
 Postman, consulte [`docs/authentication-postman.md`](docs/authentication-postman.md)
 e importe [`docs/stitchlog-auth.postman_collection.json`](docs/stitchlog-auth.postman_collection.json).

@@ -10,5 +10,5 @@
     "outDir": "./dist",
     "rootDir": "."
   },
-  "include": ["src/**/*", "migrate.ts", "seed.ts"]
+  "include": ["src/**/*", "docs/**/*.ts", "migrate.ts", "seed.ts"]
 }
